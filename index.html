@@ -1,30 +1,104 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>تسجيل العملاء للحصول على العروض</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل العملاء | العروض</title>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <style>
-    body{font-family:Arial;background:#f2f2f2;padding:20px}
-    .card{background:#fff;padding:20px;border-radius:10px;max-width:400px;margin:auto}
-    input,button{width:100%;padding:10px;margin-top:10px}
-    button{background:#1976d2;color:#fff;border:none;border-radius:5px}
-  </style>
+<style>
+*{
+  box-sizing:border-box;
+  font-family:'Cairo',sans-serif
+}
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364)
+}
+.card{
+  background:#fff;
+  width:100%;
+  max-width:420px;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+  animation:fade .8s ease
+}
+@keyframes fade{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.card h1{
+  margin:0 0 10px;
+  text-align:center;
+  color:#222
+}
+.card p{
+  margin:0 0 20px;
+  text-align:center;
+  color:#666;
+  font-size:14px
+}
+input{
+  width:100%;
+  padding:14px;
+  margin-bottom:15px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:15px
+}
+input:focus{
+  outline:none;
+  border-color:#2c5364
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#2c5364;
+  color:#fff;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.3s
+}
+button:hover{
+  background:#203a43
+}
+#msg{
+  margin-top:15px;
+  text-align:center;
+  font-weight:600
+}
+.success{color:green}
+.error{color:red}
+</style>
 </head>
+
 <body>
 
 <div class="card">
-  <h2>التسجيل للحصول على العروض</h2>
-  <input id="name" placeholder="الاسم">
-  <input id="phone" placeholder="رقم الموبايل">
+  <h1>اشترك في العروض</h1>
+  <p>سجّل بياناتك ليصلك أحدث العروض والإشعارات</p>
+
+  <input type="text" id="name" placeholder="الاسم بالكامل">
+  <input type="tel" id="phone" placeholder="رقم الموبايل">
+
   <button onclick="register()">تسجيل</button>
-  <p id="msg"></p>
+
+  <div id="msg"></div>
 </div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -38,44 +112,65 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
-const db = firebase.database();
 const messaging = firebase.messaging();
+</script>
 
-async function register() {
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
+<script>
+async function register(){
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const msg = document.getElementById("msg");
 
-  if (!name || !phone) {
-    msg.innerText = "من فضلك أدخل كل البيانات";
+  msg.className="";
+  msg.innerText="";
+
+  if(!name || !phone){
+    msg.className="error";
+    msg.innerText="من فضلك أدخل جميع البيانات";
     return;
   }
 
-  try {
-    // تسجيل الـ Service Worker بالمسار الصحيح
+  // 1️⃣ طلب الإذن
+  const permission = await Notification.requestPermission();
+  if(permission !== "granted"){
+    msg.className="error";
+    msg.innerText="يجب السماح بالإشعارات أولاً";
+    return;
+  }
+
+  try{
+    // 2️⃣ تسجيل Service Worker
     const registration = await navigator.serviceWorker.register(
       "/Costmars-offers-/firebase-messaging-sw.js"
     );
 
-    messaging.useServiceWorker(registration);
-
+    // 3️⃣ جلب التوكن
     const token = await messaging.getToken({
-      vapidKey: "BH3AKxpwkwgStqZjgxUMtHB65y1a7-FxtfIiyOpvkakwT02Dt4BS_b-CkeFAuXkh2XFXyIba-dcrif1ZUvVZ9jc"
+      vapidKey:"BH3AKxpwkwgStqZjgxUMtHB65y1a7-FxtfIiyOpvkakwT02Dt4BS_b-CkeFAuXkh2XFXyIba-dcrif1ZUvVZ9jc",
+      serviceWorkerRegistration: registration
     });
 
-    await db.ref("customers").push({
-      name,
-      phone,
-      token,
-      date: new Date().toISOString()
+    if(!token){
+      msg.className="error";
+      msg.innerText="فشل إنشاء التوكن";
+      return;
+    }
+
+    // 4️⃣ حفظ البيانات
+    await firebase.database().ref("customers").push({
+      name:name,
+      phone:phone,
+      token:token,
+      createdAt:new Date().toISOString()
     });
 
-    msg.innerText = "تم التسجيل بنجاح ✅";
+    msg.className="success";
+    msg.innerText="✅ تم التسجيل وتفعيل الإشعارات بنجاح";
 
-  } catch (e) {
+  }catch(e){
     console.error(e);
-    msg.innerText = "يجب السماح بالإشعارات أولاً";
+    msg.className="error";
+    msg.innerText="حدث خطأ، أعد المحاولة";
   }
 }
 </script>
