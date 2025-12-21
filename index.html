@@ -1,10 +1,26 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تسجيل العملاء | العروض</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>اشترك في العروض</title>
 
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async></script>
+<script>
+window.OneSignal = window.OneSignal || [];
+OneSignal.push(function() {
+  OneSignal.init({
+    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
+    notifyButton: {
+      enable: false
+    }
+  });
+});
+</script>
+
+<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -18,15 +34,16 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364)
+  background:linear-gradient(135deg,#141e30,#243b55);
+  padding:15px
 }
 .card{
   background:#fff;
   width:100%;
   max-width:420px;
-  padding:30px;
-  border-radius:16px;
-  box-shadow:0 20px 50px rgba(0,0,0,.25);
+  padding:25px 22px;
+  border-radius:18px;
+  box-shadow:0 15px 40px rgba(0,0,0,.3);
   animation:fade .8s ease
 }
 @keyframes fade{
@@ -36,32 +53,34 @@ body{
 .card h1{
   margin:0 0 10px;
   text-align:center;
-  color:#222
+  color:#222;
+  font-size:22px
 }
 .card p{
   margin:0 0 20px;
   text-align:center;
   color:#666;
-  font-size:14px
+  font-size:14px;
+  line-height:1.6
 }
 input{
   width:100%;
   padding:14px;
   margin-bottom:15px;
-  border-radius:10px;
+  border-radius:12px;
   border:1px solid #ddd;
   font-size:15px
 }
 input:focus{
   outline:none;
-  border-color:#2c5364
+  border-color:#243b55
 }
 button{
   width:100%;
-  padding:14px;
+  padding:15px;
   border:none;
-  border-radius:12px;
-  background:#2c5364;
+  border-radius:14px;
+  background:#243b55;
   color:#fff;
   font-size:16px;
   font-weight:700;
@@ -69,15 +88,22 @@ button{
   transition:.3s
 }
 button:hover{
-  background:#203a43
+  background:#141e30
 }
 #msg{
   margin-top:15px;
   text-align:center;
-  font-weight:600
+  font-weight:600;
+  font-size:14px
 }
 .success{color:green}
-.error{color:red}
+.error{color:#c0392b}
+
+/* تحسين الموبايل */
+@media(max-width:480px){
+  .card{padding:22px 18px}
+  .card h1{font-size:20px}
+}
 </style>
 </head>
 
@@ -85,96 +111,38 @@ button:hover{
 
 <div class="card">
   <h1>اشترك في العروض</h1>
-  <p>سجّل بياناتك ليصلك أحدث العروض والإشعارات</p>
+  <p>سجّل رقمك ليصلك أحدث العروض والتنبيهات فورًا</p>
 
-  <input type="text" id="name" placeholder="الاسم بالكامل">
+  <input type="text" id="name" placeholder="الاسم (اختياري)">
   <input type="tel" id="phone" placeholder="رقم الموبايل">
 
-  <button onclick="register()">تسجيل</button>
+  <button onclick="subscribe()">تفعيل الإشعارات</button>
 
   <div id="msg"></div>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
-
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBwMv6b3Pd6Xjn5Nu4Q4RFV_XFR_6BSsoM",
-  authDomain: "na3ma-customers.firebaseapp.com",
-  databaseURL: "https://na3ma-customers-default-rtdb.firebaseio.com",
-  projectId: "na3ma-customers",
-  storageBucket: "na3ma-customers.firebasestorage.app",
-  messagingSenderId: "118299493181",
-  appId: "1:118299493181:web:ea8a0b2f1bfbc2bf0d7b54"
-};
-
-firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
-</script>
-
-<script>
-async function register(){
-  const name = document.getElementById("name").value.trim();
+function subscribe(){
   const phone = document.getElementById("phone").value.trim();
   const msg = document.getElementById("msg");
 
   msg.className="";
   msg.innerText="";
 
-  if(!name || !phone){
+  if(!phone){
     msg.className="error";
-    msg.innerText="من فضلك أدخل جميع البيانات";
+    msg.innerText="من فضلك أدخل رقم الموبايل";
     return;
   }
 
-  // 1️⃣ طلب الإذن
-  const permission = await Notification.requestPermission();
-  if(permission !== "granted"){
-    msg.className="error";
-    msg.innerText="يجب السماح بالإشعارات أولاً";
-    return;
-  }
+  OneSignal.push(function() {
+    OneSignal.showSlidedownPrompt();
+  });
 
-  try{
-    // 2️⃣ تسجيل Service Worker
-    const registration = await navigator.serviceWorker.register(
-      "/Costmars-offers-/firebase-messaging-sw.js"
-    );
-
-    // 3️⃣ جلب التوكن
-    const token = await messaging.getToken({
-      vapidKey:"BH3AKxpwkwgStqZjgxUMtHB65y1a7-FxtfIiyOpvkakwT02Dt4BS_b-CkeFAuXkh2XFXyIba-dcrif1ZUvVZ9jc",
-      serviceWorkerRegistration: registration
-    });
-
-    if(!token){
-      msg.className="error";
-      msg.innerText="فشل إنشاء التوكن";
-      return;
-    }
-
-    // 4️⃣ حفظ البيانات
-    await firebase.database().ref("customers").push({
-      name:name,
-      phone:phone,
-      token:token,
-      createdAt:new Date().toISOString()
-    });
-
-    msg.className="success";
-    msg.innerText="✅ تم التسجيل وتفعيل الإشعارات بنجاح";
-
-  }catch(e){
-    console.error(e);
-    msg.className="error";
-    msg.innerText="حدث خطأ، أعد المحاولة";
-  }
+  msg.className="success";
+  msg.innerText="✅ برجاء السماح بالإشعارات من المتصفح";
 }
 </script>
 
 </body>
 </html>
-
