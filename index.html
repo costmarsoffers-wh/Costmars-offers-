@@ -1,148 +1,168 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>اشترك في العروض</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عروضنا المميزة</title>
 
-<!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async></script>
-<script>
-window.OneSignal = window.OneSignal || [];
-OneSignal.push(function() {
-  OneSignal.init({
-    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-    notifyButton: {
-      enable: false
-    }
-  });
-});
-</script>
-
-<!-- Font -->
+<!-- خط -->
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-*{
-  box-sizing:border-box;
-  font-family:'Cairo',sans-serif
-}
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{
   margin:0;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:linear-gradient(135deg,#141e30,#243b55);
+  background:#f4f6f8;
   padding:15px
 }
-.card{
-  background:#fff;
-  width:100%;
-  max-width:420px;
-  padding:25px 22px;
-  border-radius:18px;
-  box-shadow:0 15px 40px rgba(0,0,0,.3);
-  animation:fade .8s ease
+header{
+  text-align:center;
+  margin-bottom:20px
 }
-@keyframes fade{
+header h1{
+  margin:0;
+  color:#2a5298;
+  font-size:24px
+}
+header p{
+  margin:5px 0 0;
+  color:#555
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px
+}
+.offer{
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 12px 35px rgba(0,0,0,.15);
+  overflow:hidden;
+  animation:fadeUp .6s ease
+}
+@keyframes fadeUp{
   from{opacity:0;transform:translateY(20px)}
   to{opacity:1;transform:translateY(0)}
 }
-.card h1{
-  margin:0 0 10px;
-  text-align:center;
-  color:#222;
-  font-size:22px
-}
-.card p{
-  margin:0 0 20px;
-  text-align:center;
-  color:#666;
-  font-size:14px;
-  line-height:1.6
-}
-input{
+.offer img{
   width:100%;
-  padding:14px;
-  margin-bottom:15px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  font-size:15px
+  height:220px;
+  object-fit:cover
 }
-input:focus{
-  outline:none;
-  border-color:#243b55
+.content{
+  padding:15px
 }
-button{
-  width:100%;
-  padding:15px;
-  border:none;
-  border-radius:14px;
-  background:#243b55;
+.desc{
+  font-size:15px;
+  line-height:1.7;
+  color:#333
+}
+.timer{
+  margin-top:10px;
+  padding:10px;
+  background:#2a5298;
   color:#fff;
-  font-size:16px;
-  font-weight:700;
-  cursor:pointer;
-  transition:.3s
-}
-button:hover{
-  background:#141e30
-}
-#msg{
-  margin-top:15px;
   text-align:center;
-  font-weight:600;
-  font-size:14px
+  border-radius:14px;
+  font-weight:700;
+  animation:pulse 1.5s infinite
 }
-.success{color:green}
-.error{color:#c0392b}
-
-/* تحسين الموبايل */
-@media(max-width:480px){
-  .card{padding:22px 18px}
-  .card h1{font-size:20px}
+@keyframes pulse{
+  0%{opacity:.8}
+  50%{opacity:1}
+  100%{opacity:.8}
+}
+.offer:active{
+  transform:scale(.97)
+}
+.empty{
+  text-align:center;
+  color:#777;
+  margin-top:40px
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h1>اشترك في العروض</h1>
-  <p>سجّل رقمك ليصلك أحدث العروض والتنبيهات فورًا</p>
+<header>
+  <h1>🔥 أحدث العروض</h1>
+  <p>عروض لفترة محدودة</p>
+</header>
 
-  <input type="text" id="name" placeholder="الاسم (اختياري)">
-  <input type="tel" id="phone" placeholder="رقم الموبايل">
+<div class="grid" id="offers"></div>
 
-  <button onclick="subscribe()">تفعيل الإشعارات</button>
-
-  <div id="msg"></div>
-</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-function subscribe(){
-  const phone = document.getElementById("phone").value.trim();
-  const msg = document.getElementById("msg");
+// Firebase
+firebase.initializeApp({
+  databaseURL:"https://na3ma-customers-default-rtdb.firebaseio.com/"
+});
+const db = firebase.database();
 
-  msg.className="";
-  msg.innerText="";
+let WHATSAPP_NUMBER = "";
 
-  if(!phone){
-    msg.className="error";
-    msg.innerText="من فضلك أدخل رقم الموبايل";
-    return;
-  }
+// جلب رقم الواتساب
+db.ref("settings/whatsapp").once("value").then(s=>{
+  WHATSAPP_NUMBER = s.val() || "";
+});
 
-  OneSignal.push(function() {
-    OneSignal.showSlidedownPrompt();
+// جلب العروض
+db.ref("offers").on("value",snap=>{
+  offers.innerHTML="";
+  let has=false;
+  const now=new Date();
+
+  snap.forEach(c=>{
+    const o=c.val();
+    const start=new Date(o.start);
+    const end=new Date(o.end);
+
+    if(now < start || now > end) return;
+
+    has=true;
+    const card=document.createElement("div");
+    card.className="offer";
+    card.innerHTML=`
+      <img src="${o.image}">
+      <div class="content">
+        <div class="desc">${o.desc}</div>
+        <div class="timer"></div>
+      </div>
+    `;
+    card.onclick=()=>{
+      if(!WHATSAPP_NUMBER) return;
+      const msg=encodeURIComponent(o.desc);
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`,"_blank");
+    };
+    offers.appendChild(card);
+    startTimer(card.querySelector(".timer"),end);
   });
 
-  msg.className="success";
-  msg.innerText="✅ برجاء السماح بالإشعارات من المتصفح";
+  if(!has){
+    offers.innerHTML='<div class="empty">لا توجد عروض حالياً</div>';
+  }
+});
+
+function startTimer(el,end){
+  setInterval(()=>{
+    const diff=end-new Date();
+    if(diff<=0){
+      el.innerText="⛔ انتهى العرض";
+      return;
+    }
+    const h=Math.floor(diff/1000/60/60);
+    const m=Math.floor(diff/1000/60)%60;
+    const s=Math.floor(diff/1000)%60;
+    el.innerText=`⏳ ${h}س ${m}د ${s}ث`;
+  },1000);
 }
+
+const offers=document.getElementById("offers");
 </script>
 
 </body>
 </html>
+
