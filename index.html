@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>عروضنا المميزة</title>
+<title>عروضنا</title>
 
-<!-- خط -->
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{
   margin:0;
-  background:#f4f6f8;
+  background:#f2f4f8;
   padding:15px
 }
 header{
@@ -21,64 +20,84 @@ header{
 }
 header h1{
   margin:0;
-  color:#2a5298;
-  font-size:24px
+  color:#2a5298
 }
 header p{
-  margin:5px 0 0;
-  color:#555
-}
-.grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:18px
+  margin-top:5px;
+  color:#666
 }
 .offer{
   background:#fff;
-  border-radius:20px;
-  box-shadow:0 12px 35px rgba(0,0,0,.15);
+  border-radius:22px;
+  box-shadow:0 15px 40px rgba(0,0,0,.18);
+  margin-bottom:22px;
   overflow:hidden;
-  animation:fadeUp .6s ease
+  animation:fadeUp .6s ease;
+  position:relative
 }
 @keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
+  from{opacity:0;transform:translateY(30px)}
   to{opacity:1;transform:translateY(0)}
 }
 .offer img{
   width:100%;
-  height:220px;
-  object-fit:cover
+  height:auto;
+  display:block
+}
+.badge{
+  position:absolute;
+  top:12px;
+  right:12px;
+  background:#e53935;
+  color:#fff;
+  padding:6px 12px;
+  border-radius:14px;
+  font-size:12px;
+  font-weight:700
 }
 .content{
-  padding:15px
+  padding:18px
 }
 .desc{
   font-size:15px;
-  line-height:1.7;
-  color:#333
+  line-height:1.8;
+  color:#222
 }
 .timer{
-  margin-top:10px;
-  padding:10px;
-  background:#2a5298;
+  margin-top:14px;
+  padding:14px;
+  background:linear-gradient(135deg,#1e3c72,#2a5298);
   color:#fff;
   text-align:center;
-  border-radius:14px;
+  border-radius:16px;
   font-weight:700;
-  animation:pulse 1.5s infinite
+  font-size:14px;
+  animation:pulse 1.6s infinite
 }
 @keyframes pulse{
-  0%{opacity:.8}
+  0%{opacity:.85}
   50%{opacity:1}
-  100%{opacity:.8}
+  100%{opacity:.85}
+}
+.order-btn{
+  margin-top:14px;
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:16px;
+  background:#25D366;
+  color:#fff;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer
 }
 .offer:active{
   transform:scale(.97)
 }
 .empty{
   text-align:center;
-  color:#777;
-  margin-top:40px
+  margin-top:40px;
+  color:#777
 }
 </style>
 </head>
@@ -86,11 +105,11 @@ header p{
 <body>
 
 <header>
-  <h1>🔥 أحدث العروض</h1>
-  <p>عروض لفترة محدودة</p>
+  <h1>🔥 عروضنا الحالية</h1>
+  <p>سارع قبل انتهاء الوقت</p>
 </header>
 
-<div class="grid" id="offers"></div>
+<div id="offers"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -109,41 +128,57 @@ db.ref("settings/whatsapp").once("value").then(s=>{
   WHATSAPP_NUMBER = s.val() || "";
 });
 
-// جلب العروض
-db.ref("offers").on("value",snap=>{
-  offers.innerHTML="";
-  let has=false;
-  const now=new Date();
+// جلب العروض وترتيبها حسب أقرب انتهاء
+db.ref("offers").once("value").then(snap=>{
+  const now = new Date();
+  const list = [];
 
   snap.forEach(c=>{
     const o=c.val();
     const start=new Date(o.start);
     const end=new Date(o.end);
+    if(now>=start && now<end){
+      list.push({...o,end});
+    }
+  });
 
-    if(now < start || now > end) return;
+  list.sort((a,b)=>a.end-b.end);
 
-    has=true;
+  if(list.length===0){
+    offers.innerHTML='<div class="empty">لا توجد عروض حالياً</div>';
+    return;
+  }
+
+  list.forEach(o=>{
+    const diff=o.end-now;
+    const soon=diff<1000*60*60*24;
+
     const card=document.createElement("div");
     card.className="offer";
     card.innerHTML=`
+      ${soon?'<div class="badge">⏰ ينتهي قريبًا</div>':""}
       <img src="${o.image}">
       <div class="content">
         <div class="desc">${o.desc}</div>
         <div class="timer"></div>
+        <button class="order-btn">🛒 طلب العرض</button>
       </div>
     `;
-    card.onclick=()=>{
-      if(!WHATSAPP_NUMBER) return;
-      const msg=encodeURIComponent(o.desc);
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`,"_blank");
-    };
-    offers.appendChild(card);
-    startTimer(card.querySelector(".timer"),end);
-  });
 
-  if(!has){
-    offers.innerHTML='<div class="empty">لا توجد عروض حالياً</div>';
-  }
+    card.querySelector(".order-btn").onclick=()=>{
+      if(!WHATSAPP_NUMBER) return;
+      const msg=encodeURIComponent(
+        `🛒 طلب عرض:\n${o.desc}`
+      );
+      window.open(
+        `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`,
+        "_blank"
+      );
+    };
+
+    offers.appendChild(card);
+    startTimer(card.querySelector(".timer"),o.end);
+  });
 });
 
 function startTimer(el,end){
@@ -153,10 +188,12 @@ function startTimer(el,end){
       el.innerText="⛔ انتهى العرض";
       return;
     }
-    const h=Math.floor(diff/1000/60/60);
+    const d=Math.floor(diff/1000/60/60/24);
+    const h=Math.floor(diff/1000/60/60)%24;
     const m=Math.floor(diff/1000/60)%60;
     const s=Math.floor(diff/1000)%60;
-    el.innerText=`⏳ ${h}س ${m}د ${s}ث`;
+
+    el.innerText=`⏳ ${d} يوم · ${h} ساعة · ${m} دقيقة · ${s} ثانية`;
   },1000);
 }
 
