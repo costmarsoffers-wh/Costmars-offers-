@@ -1,203 +1,176 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>عروضنا</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عروضنا المميزة</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- OneSignal -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
+      });
+    });
+  </script>
 
-<style>
-*{box-sizing:border-box;font-family:'Cairo',sans-serif}
-body{
-  margin:0;
-  background:#f2f4f8;
-  padding:15px
-}
-header{
-  text-align:center;
-  margin-bottom:20px
-}
-header h1{
-  margin:0;
-  color:#2a5298
-}
-header p{
-  margin-top:5px;
-  color:#666
-}
-.offer{
-  background:#fff;
-  border-radius:22px;
-  box-shadow:0 15px 40px rgba(0,0,0,.18);
-  margin-bottom:22px;
-  overflow:hidden;
-  animation:fadeUp .6s ease;
-  position:relative
-}
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(30px)}
-  to{opacity:1;transform:translateY(0)}
-}
-.offer img{
-  width:100%;
-  height:auto;
-  display:block
-}
-.badge{
-  position:absolute;
-  top:12px;
-  right:12px;
-  background:#e53935;
-  color:#fff;
-  padding:6px 12px;
-  border-radius:14px;
-  font-size:12px;
-  font-weight:700
-}
-.content{
-  padding:18px
-}
-.desc{
-  font-size:15px;
-  line-height:1.8;
-  color:#222
-}
-.timer{
-  margin-top:14px;
-  padding:14px;
-  background:linear-gradient(135deg,#1e3c72,#2a5298);
-  color:#fff;
-  text-align:center;
-  border-radius:16px;
-  font-weight:700;
-  font-size:14px;
-  animation:pulse 1.6s infinite
-}
-@keyframes pulse{
-  0%{opacity:.85}
-  50%{opacity:1}
-  100%{opacity:.85}
-}
-.order-btn{
-  margin-top:14px;
-  width:100%;
-  padding:15px;
-  border:none;
-  border-radius:16px;
-  background:#25D366;
-  color:#fff;
-  font-size:16px;
-  font-weight:700;
-  cursor:pointer
-}
-.offer:active{
-  transform:scale(.97)
-}
-.empty{
-  text-align:center;
-  margin-top:40px;
-  color:#777
-}
-</style>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Cairo', sans-serif;
+      background: #f4f6f8;
+    }
+
+    header {
+      background: linear-gradient(135deg, #ff9800, #ff5722);
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .offers {
+      padding: 15px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+    }
+
+    .offer-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .offer-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .offer-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .offer-content {
+      padding: 15px;
+    }
+
+    .offer-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .offer-desc {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    .countdown {
+      background: #f1f1f1;
+      border-radius: 10px;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #d32f2f;
+      font-weight: bold;
+    }
+
+    .order-btn {
+      display: block;
+      width: 100%;
+      background: #25d366;
+      color: #fff;
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .order-btn:hover {
+      background: #1ebc59;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
-  <h1>🔥 عروضنا الحالية</h1>
-  <p>سارع قبل انتهاء الوقت</p>
+  🔥 أحدث العروض المتاحة 🔥
 </header>
 
-<div id="offers"></div>
+<section class="offers">
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- عرض -->
+  <div class="offer-card">
+    <img src="https://picsum.photos/600/400?1" alt="عرض">
+    <div class="offer-content">
+      <div class="offer-title">عرض خاص لفترة محدودة</div>
+      <div class="offer-desc">
+        خصم قوي على المنتج – الكمية محدودة سارع بالطلب
+      </div>
+      <div class="countdown" data-end="2025-01-01T23:59:59">
+        ⏳ جاري الحساب...
+      </div>
+      <a class="order-btn"
+         href="https://wa.me/201234567890?text=أرغب%20في%20طلب%20هذا%20العرض">
+        📲 طلب العرض عبر واتساب
+      </a>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  © جميع الحقوق محفوظة
+</footer>
 
 <script>
-// Firebase
-firebase.initializeApp({
-  databaseURL:"https://na3ma-customers-default-rtdb.firebaseio.com/"
-});
-const db = firebase.database();
+  // عد تنازلي
+  function startCountdown() {
+    document.querySelectorAll('.countdown').forEach(el => {
+      const end = new Date(el.dataset.end).getTime();
 
-let WHATSAPP_NUMBER = "";
+      setInterval(() => {
+        const now = new Date().getTime();
+        const diff = end - now;
 
-// جلب رقم الواتساب
-db.ref("settings/whatsapp").once("value").then(s=>{
-  WHATSAPP_NUMBER = s.val() || "";
-});
+        if (diff <= 0) {
+          el.textContent = "⛔ انتهى العرض";
+          return;
+        }
 
-// جلب العروض وترتيبها حسب أقرب انتهاء
-db.ref("offers").once("value").then(snap=>{
-  const now = new Date();
-  const list = [];
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
 
-  snap.forEach(c=>{
-    const o=c.val();
-    const start=new Date(o.start);
-    const end=new Date(o.end);
-    if(now>=start && now<end){
-      list.push({...o,end});
-    }
-  });
-
-  list.sort((a,b)=>a.end-b.end);
-
-  if(list.length===0){
-    offers.innerHTML='<div class="empty">لا توجد عروض حالياً</div>';
-    return;
+        el.textContent = `⏳ ${days} يوم ${hours} ساعة ${minutes} دقيقة ${seconds} ثانية`;
+      }, 1000);
+    });
   }
 
-  list.forEach(o=>{
-    const diff=o.end-now;
-    const soon=diff<1000*60*60*24;
-
-    const card=document.createElement("div");
-    card.className="offer";
-    card.innerHTML=`
-      ${soon?'<div class="badge">⏰ ينتهي قريبًا</div>':""}
-      <img src="${o.image}">
-      <div class="content">
-        <div class="desc">${o.desc}</div>
-        <div class="timer"></div>
-        <button class="order-btn">🛒 طلب العرض</button>
-      </div>
-    `;
-
-    card.querySelector(".order-btn").onclick=()=>{
-      if(!WHATSAPP_NUMBER) return;
-      const msg=encodeURIComponent(
-        `🛒 طلب عرض:\n${o.desc}`
-      );
-      window.open(
-        `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`,
-        "_blank"
-      );
-    };
-
-    offers.appendChild(card);
-    startTimer(card.querySelector(".timer"),o.end);
-  });
-});
-
-function startTimer(el,end){
-  setInterval(()=>{
-    const diff=end-new Date();
-    if(diff<=0){
-      el.innerText="⛔ انتهى العرض";
-      return;
-    }
-    const d=Math.floor(diff/1000/60/60/24);
-    const h=Math.floor(diff/1000/60/60)%24;
-    const m=Math.floor(diff/1000/60)%60;
-    const s=Math.floor(diff/1000)%60;
-
-    el.innerText=`⏳ ${d} يوم · ${h} ساعة · ${m} دقيقة · ${s} ثانية`;
-  },1000);
-}
-
-const offers=document.getElementById("offers");
+  startCountdown();
 </script>
 
 </body>
