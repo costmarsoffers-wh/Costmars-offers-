@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>العروض الحالية</title>
 
-<!-- OneSignal (الطريقة الافتراضية بدون مشاكل) -->
+<!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-      notifyButton: { enable: false }
-    });
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({
+    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
+    notifyButton: { enable: false }
   });
+});
 </script>
 
 <!-- Firebase -->
@@ -23,106 +23,97 @@
 
 <style>
 body{
-  font-family: system-ui, Arial;
   margin:0;
+  font-family:system-ui, Arial;
   background:#f4f6f9;
 }
-header{
+
+/* Subscribe Bar */
+#subBar{
+  position:fixed;
+  top:0; left:0; right:0;
   background:linear-gradient(135deg,#1976d2,#0d47a1);
-  color:#fff;
-  padding:20px;
-  text-align:center;
-}
-.offers{
-  padding:15px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:15px;
-}
-.card{
-  background:#fff;
-  border-radius:14px;
-  overflow:hidden;
-  box-shadow:0 6px 18px rgba(0,0,0,.1);
+  padding:10px;
   display:flex;
-  flex-direction:column;
+  gap:8px;
+  z-index:9999;
 }
-.card img{
+#subBar input{
+  flex:1;
+  padding:8px;
+  border-radius:6px;
+  border:none;
+}
+#subBar button{
+  background:#25d366;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  font-weight:bold;
+}
+
+/* Offer Card */
+.offer{
+  background:#fff;
+  margin:15px;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 8px 20px rgba(0,0,0,.12);
+}
+.offer img{
   width:100%;
-  height:200px;
+  height:280px;
   object-fit:cover;
 }
-.card .content{
+.offer .content{
   padding:15px;
-  flex:1;
 }
-.card h3{
+.offer h2{
   margin:0 0 8px;
-  color:#222;
+  font-size:20px;
 }
-.card p{
-  margin:0 0 10px;
+.offer p{
+  margin:0 0 12px;
   color:#555;
-  font-size:14px;
 }
 .timer{
   background:#f1f1f1;
-  padding:8px;
-  border-radius:8px;
+  padding:10px;
+  border-radius:10px;
   text-align:center;
   font-weight:bold;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 .btn{
+  display:block;
+  text-align:center;
   background:#25d366;
   color:#fff;
-  text-align:center;
-  padding:12px;
+  padding:14px;
   text-decoration:none;
-  font-weight:bold;
-}
-.subscribe-box{
-  background:#fff;
-  margin:15px;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,.1);
-}
-.subscribe-box input{
-  width:100%;
-  padding:10px;
-  margin-bottom:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-.subscribe-box button{
-  width:100%;
-  padding:12px;
-  background:#1976d2;
-  color:#fff;
-  border:none;
-  border-radius:8px;
   font-size:16px;
+  font-weight:bold;
+  border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  <h1>🔥 أحدث العروض</h1>
-  <p>اشترك ليصلك كل جديد</p>
-</header>
-
-<div class="subscribe-box">
-  <input id="name" placeholder="الاسم">
-  <input id="phone" placeholder="رقم الموبايل">
-  <button onclick="subscribe()">اشترك في الإشعارات</button>
+<!-- Subscribe Bar -->
+<div id="subBar">
+  <input id="subName" placeholder="الاسم">
+  <input id="subPhone" placeholder="رقم الموبايل">
+  <button onclick="subscribe()">اشترك 🔔</button>
 </div>
 
-<div class="offers" id="offers"></div>
+<div style="height:60px"></div>
+
+<div id="offers"></div>
 
 <script>
+/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyBwMv6b3Pd6Xjn5Nu4Q4RFV_XFR_6BSsoM",
   databaseURL: "https://na3ma-customers-default-rtdb.firebaseio.com"
@@ -130,60 +121,68 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let whatsappNumber = "";
+let whatsapp = "";
 
+/* Get WhatsApp number */
 db.ref("settings/whatsapp").on("value", s=>{
-  whatsappNumber = s.val() || "";
+  whatsapp = s.val() || "";
 });
 
+/* Load offers */
 db.ref("offers").on("value", snap=>{
   const box = document.getElementById("offers");
   box.innerHTML = "";
   snap.forEach(child=>{
     const o = child.val();
-    const end = new Date(o.end).getTime();
+    const endTime = new Date(o.end).getTime();
 
-    const card = document.createElement("div");
-    card.className="card";
-
-    card.innerHTML = `
+    const el = document.createElement("div");
+    el.className="offer";
+    el.innerHTML = `
       <img src="${o.image}">
       <div class="content">
-        <h3>${o.title || ""}</h3>
+        <h2>${o.title || ""}</h2>
         <p>${o.desc || ""}</p>
         <div class="timer" id="t_${child.key}"></div>
+        <a class="btn" target="_blank"
+           href="https://wa.me/${whatsapp}?text=${encodeURIComponent(o.desc)}">
+           طلب العرض
+        </a>
       </div>
-      <a class="btn" target="_blank"
-        href="https://wa.me/${whatsappNumber}?text=${encodeURIComponent(o.desc)}">
-        طلب العرض
-      </a>
     `;
-    box.appendChild(card);
+    box.appendChild(el);
 
     setInterval(()=>{
       const now = Date.now();
-      let d = end - now;
-      if(d<0){ document.getElementById("t_"+child.key).innerText="انتهى العرض"; return;}
-      const days = Math.floor(d/86400000);
-      const hrs = Math.floor((d%86400000)/3600000);
-      const mins = Math.floor((d%3600000)/60000);
-      const secs = Math.floor((d%60000)/1000);
-      document.getElementById("t_"+child.key).innerText =
-        `${days}ي ${hrs}س ${mins}د ${secs}ث`;
+      let diff = endTime - now;
+      const t = document.getElementById("t_"+child.key);
+      if(diff <= 0){
+        t.innerText = "انتهى العرض";
+        return;
+      }
+      const d = Math.floor(diff/86400000);
+      const h = Math.floor((diff%86400000)/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      const s = Math.floor((diff%60000)/1000);
+      t.innerText = `${d} يوم ${h} ساعة ${m} دقيقة ${s} ثانية`;
     },1000);
   });
 });
 
+/* Subscribe */
 function subscribe(){
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
-  if(!name || !phone){ alert("أدخل البيانات"); return;}
-
+  const name = subName.value.trim();
+  const phone = subPhone.value.trim();
+  if(!name || !phone){
+    alert("من فضلك أدخل البيانات");
+    return;
+  }
   OneSignalDeferred.push(async function(OneSignal){
     await OneSignal.showSlidedownPrompt();
     await OneSignal.sendTag("name", name);
     await OneSignal.sendTag("phone", phone);
     await OneSignal.sendTag("subscribed", "yes");
+    document.getElementById("subBar").style.display="none";
     alert("تم الاشتراك بنجاح");
   });
 }
