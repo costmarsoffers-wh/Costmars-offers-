@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>أحدث العروض</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🔥 أحدث العروض</title>
 
 <!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -11,7 +11,8 @@
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
   await OneSignal.init({
-    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb"
+    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
+    notifyButton: { enable: true }
   });
 });
 </script>
@@ -21,121 +22,156 @@ OneSignalDeferred.push(async function(OneSignal) {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f9}
-header{background:#0d47a1;color:#fff;padding:15px;text-align:center;font-size:20px}
-.container{padding:15px}
-.offer{
- background:#fff;
- border-radius:18px;
- box-shadow:0 5px 15px rgba(0,0,0,.15);
- margin-bottom:20px;
- overflow:hidden
+body{
+  margin:0;
+  font-family: "Cairo", Arial;
+  background:#f2f4f8;
 }
-.offer img{width:100%;display:block}
-.box{padding:15px}
-.title{font-size:18px;font-weight:bold}
-.desc{margin:10px 0;color:#444}
-.timer{
- background:#eee;
- padding:10px;
- border-radius:10px;
- text-align:center;
- font-weight:bold;
- margin-bottom:10px
+header{
+  background:#0d3b66;
+  color:#fff;
+  text-align:center;
+  padding:15px;
+  font-size:20px;
+}
+.container{
+  padding:15px;
+}
+.offer{
+  background:#fff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,.12);
+  margin-bottom:20px;
+  animation: fadeUp .6s ease;
+}
+.offer img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+.offer-content{
+  padding:15px;
+}
+.offer-title{
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:6px;
+}
+.offer-desc{
+  color:#555;
+  font-size:15px;
+  margin-bottom:12px;
+}
+.countdown{
+  background:#eef2f7;
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+  font-weight:bold;
+  margin-bottom:12px;
 }
 .btn{
- width:100%;
- background:#25D366;
- color:#fff;
- border:none;
- padding:14px;
- font-size:16px;
- border-radius:12px
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#1faa59;
+  color:#fff;
+  font-size:17px;
+  cursor:pointer;
 }
-.notify{
- background:#ff9800;
- color:#fff;
- border:none;
- padding:15px;
- width:100%;
- border-radius:15px;
- font-size:17px;
- margin-bottom:15px
+.btn:disabled{
+  background:#aaa;
+}
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(20px)}
+  to{opacity:1; transform:translateY(0)}
 }
 </style>
 </head>
 
 <body>
 
-<header>🔥 أحدث العروض 🔥</header>
-
-<div class="container">
-<button class="notify" onclick="enableNotify()">🔔 تفعيل إشعارات العروض</button>
-<div id="offers"></div>
-</div>
+<header>🔥 أحدث العروض</header>
+<div class="container" id="offers"></div>
 
 <script>
-firebase.initializeApp({
- databaseURL:"https://na3ma-customers-default-rtdb.firebaseio.com"
+/* Firebase Config */
+const firebaseConfig = {
+  databaseURL: "https://na3ma-customers-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* Load WhatsApp Number */
+let WHATSAPP = "";
+db.ref("settings/whatsapp").on("value", snap=>{
+  WHATSAPP = snap.val() || "";
 });
 
-const box = document.getElementById("offers");
+/* Countdown */
+function startCountdown(el, endDate){
+  function update(){
+    const now = new Date().getTime();
+    const end = new Date(endDate).getTime();
+    const diff = end - now;
 
-function enableNotify(){
- OneSignalDeferred.push(async function(OneSignal){
-  await OneSignal.Notifications.requestPermission();
-  alert("✅ تم تفعيل الإشعارات");
- });
+    if(diff <= 0){
+      el.innerHTML = "⏳ انتهى العرض";
+      return;
+    }
+    const d = Math.floor(diff / (1000*60*60*24));
+    const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+    const m = Math.floor((diff%(1000*60*60))/(1000*60));
+    const s = Math.floor((diff%(1000*60))/1000);
+
+    el.innerHTML = `⏰ ${d}ي ${h}س ${m}د ${s}ث`;
+  }
+  update();
+  setInterval(update,1000);
 }
 
-function whatsapp(num,title){
- if(!num) return alert("رقم الواتساب غير متوفر");
- window.open(
-  `https://wa.me/${num}?text=${encodeURIComponent("أرغب في طلب عرض: "+title)}`
- );
-}
+/* Load Offers */
+const offersBox = document.getElementById("offers");
 
-firebase.database().ref("offers").on("child_added",snap=>{
- const o = snap.val();
+db.ref("offers").on("value", snap=>{
+  offersBox.innerHTML = "";
+  snap.forEach(child=>{
+    const o = child.val();
 
- const title = o.Al || "";
- const desc  = o.desc || "";
- const img   = o.image || "";
- const start = new Date(o.start).getTime();
- const end   = new Date(o.and).getTime();
- const phone = o.settings?.whatsapp || "";
- const id    = "t"+snap.key;
+    if(!o.image || !o.end) return;
 
- box.innerHTML += `
- <div class="offer">
-  <img src="${img}">
-  <div class="box">
-   <div class="title">${title}</div>
-   <div class="desc">${desc}</div>
-   <div class="timer" id="${id}">...</div>
-   <button class="btn" onclick="whatsapp('${phone}','${title}')">
-    طلب العرض عبر واتساب
-   </button>
-  </div>
- </div>`;
+    const card = document.createElement("div");
+    card.className = "offer";
 
- setInterval(()=>{
-  const now = Date.now();
-  if(now < start){
-    document.getElementById(id).innerHTML="⏳ لم يبدأ بعد";
-    return;
-  }
-  const diff = end - now;
-  if(diff<=0){
-    document.getElementById(id).innerHTML="❌ انتهى العرض";
-    return;
-  }
-  const d=Math.floor(diff/86400000);
-  const h=Math.floor(diff%86400000/3600000);
-  const m=Math.floor(diff%3600000/60000);
-  const s=Math.floor(diff%60000/1000);
-  document.getElementById(id).innerHTML=`⏳ ${d}ي ${h}س ${m}د ${s}ث`;
- },1000);
+    card.innerHTML = `
+      <img src="${o.image}">
+      <div class="offer-content">
+        <div class="offer-title">${o.title || "عرض مميز"}</div>
+        <div class="offer-desc">${o.desc || ""}</div>
+        <div class="countdown"></div>
+        <button class="btn">طلب العرض عبر واتساب</button>
+      </div>
+    `;
+
+    const cd = card.querySelector(".countdown");
+    startCountdown(cd, o.end);
+
+    const btn = card.querySelector(".btn");
+    btn.onclick = ()=>{
+      if(!WHATSAPP){
+        alert("رقم الواتساب غير متوفر");
+        return;
+      }
+      const msg = encodeURIComponent(
+        `أرغب في طلب العرض:\n${o.title}\n${o.desc}`
+      );
+      window.open(`https://wa.me/${WHATSAPP}?text=${msg}`,"_blank");
+    };
+
+    offersBox.appendChild(card);
+  });
 });
 </script>
 
