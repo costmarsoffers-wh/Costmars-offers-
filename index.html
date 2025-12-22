@@ -5,41 +5,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🔥 عروضنا</title>
 
-<!-- OneSignal -->
+<!-- ===== OneSignal (كما أرسلت بالضبط) ===== -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
+    });
+  });
+</script>
 
-<!-- Firebase -->
+<!-- ===== Firebase ===== -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
 body{margin:0;font-family:Cairo,Arial;background:#f2f4f8}
 header{background:#0d3b66;color:#fff;padding:15px;text-align:center;font-size:20px}
+
 .btn-main{
   background:#fca311;color:#000;border:none;
   padding:14px;width:90%;margin:15px auto;
   display:block;border-radius:14px;font-size:16px
 }
+
 .container{padding:15px}
-.offer{background:#fff;border-radius:18px;overflow:hidden;
-box-shadow:0 6px 18px rgba(0,0,0,.15);margin-bottom:20px}
+
+.offer{
+  background:#fff;border-radius:18px;overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.15);
+  margin-bottom:20px
+}
 .offer img{width:100%}
 .offer-content{padding:15px}
 .offer-title{font-size:18px;font-weight:bold}
 .offer-desc{margin:8px 0;color:#555}
-.countdown{background:#eef2f7;border-radius:12px;
-padding:10px;text-align:center;margin:10px 0;font-weight:bold}
-.btn{background:#1faa59;color:#fff;width:100%;
-padding:14px;border:none;border-radius:14px;font-size:17px}
 
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);
-display:none;align-items:center;justify-content:center}
-.modal-box{background:#fff;border-radius:16px;
-padding:20px;width:90%;max-width:350px}
+.countdown{
+  background:#eef2f7;border-radius:12px;
+  padding:10px;text-align:center;margin:10px 0;font-weight:bold
+}
+
+.btn{
+  background:#1faa59;color:#fff;width:100%;
+  padding:14px;border:none;border-radius:14px;font-size:17px
+}
+
+/* نافذة الاشتراك */
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);
+  display:none;align-items:center;justify-content:center
+}
+.modal-box{
+  background:#fff;border-radius:16px;
+  padding:20px;width:90%;max-width:350px
+}
 .modal-box h3{text-align:center}
 .modal-box input{
-width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #ccc
+  width:100%;padding:12px;margin:8px 0;
+  border-radius:10px;border:1px solid #ccc
 }
 </style>
 </head>
@@ -54,7 +79,7 @@ width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #ccc
 
 <div class="container" id="offers"></div>
 
-<!-- Subscription Modal -->
+<!-- نافذة الاشتراك -->
 <div class="modal" id="subModal">
   <div class="modal-box">
     <h3>الاشتراك في العروض</h3>
@@ -65,21 +90,19 @@ width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #ccc
 </div>
 
 <script>
-/* ================= Firebase ================= */
+/* ===== Firebase Init ===== */
 firebase.initializeApp({
   databaseURL:"https://na3ma-customers-default-rtdb.firebaseio.com/"
 });
 const db = firebase.database();
 
-/* ================= OneSignal ================= */
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal){
-  await OneSignal.init({
-    appId:"9fff8ba1-a3f9-45b6-b38c-d141ab4617eb"
-  });
+/* ===== WhatsApp ===== */
+let WHATSAPP="";
+db.ref("settings/whatsapp").on("value",s=>{
+  WHATSAPP = s.val() || "";
 });
 
-/* ================= Subscription ================= */
+/* ===== الاشتراك ===== */
 function openSub(){
   document.getElementById("subModal").style.display="flex";
 }
@@ -89,69 +112,82 @@ function subscribe(){
   const phone = document.getElementById("subPhone").value.trim();
 
   if(!name || !phone){
-    alert("يرجى إدخال البيانات");
+    alert("يرجى إدخال الاسم ورقم الموبايل");
     return;
   }
 
-  // Save in Firebase
+  // حفظ في Firebase
   db.ref("subscribers").push({
-    name, phone, createdAt:Date.now()
+    name,
+    phone,
+    createdAt: Date.now()
   });
 
-  // OneSignal Tags + Permission
+  // طلب الإذن + Tags في OneSignal
   OneSignalDeferred.push(async function(OneSignal){
-    OneSignal.User.addTags({
-      name:name,
-      phone:phone,
-      subscribed:"yes"
-    });
     OneSignal.Slidedown.promptPush();
+    OneSignal.User.addTags({
+      name: name,
+      phone: phone,
+      subscribed: "yes"
+    });
   });
 
   document.getElementById("subModal").style.display="none";
   alert("تم الاشتراك بنجاح ✅");
 }
 
-/* ================= Offers ================= */
-let WHATSAPP="";
-db.ref("settings/whatsapp").on("value",s=>WHATSAPP=s.val()||"");
-
+/* ===== العد التنازلي ===== */
 function countdown(el,end){
   function run(){
-    const diff=new Date(end)-new Date();
-    if(diff<=0){el.innerHTML="⏳ انتهى العرض";return;}
+    const diff = new Date(end) - new Date();
+    if(diff <= 0){
+      el.innerHTML = "⏳ انتهى العرض";
+      return;
+    }
     const d=Math.floor(diff/86400000);
     const h=Math.floor(diff%86400000/3600000);
     const m=Math.floor(diff%3600000/60000);
     const s=Math.floor(diff%60000/1000);
     el.innerHTML=`⏰ ${d}ي ${h}س ${m}د ${s}ث`;
   }
-  run();setInterval(run,1000);
+  run();
+  setInterval(run,1000);
 }
 
+/* ===== جلب العروض ===== */
 db.ref("offers").on("value",snap=>{
   const box=document.getElementById("offers");
   box.innerHTML="";
   snap.forEach(c=>{
     const o=c.val();
-    if(!o.image||!o.end)return;
+    if(!o.image || !o.end) return;
 
     const div=document.createElement("div");
     div.className="offer";
     div.innerHTML=`
       <img src="${o.image}">
       <div class="offer-content">
-        <div class="offer-title">${o.title||"عرض مميز"}</div>
-        <div class="offer-desc">${o.desc||""}</div>
+        <div class="offer-title">${o.title || "عرض مميز"}</div>
+        <div class="offer-desc">${o.desc || ""}</div>
         <div class="countdown"></div>
         <button class="btn">طلب العرض عبر واتساب</button>
       </div>
     `;
-    countdown(div.querySelector(".countdown"),o.end);
+    countdown(div.querySelector(".countdown"), o.end);
+
     div.querySelector(".btn").onclick=()=>{
-      window.open(`https://wa.me/${WHATSAPP}?text=`+
-      encodeURIComponent(`طلب عرض:\n${o.title}\n${o.desc}`));
+      if(!WHATSAPP){
+        alert("رقم الواتساب غير متوفر");
+        return;
+      }
+      window.open(
+        `https://wa.me/${WHATSAPP}?text=`+
+        encodeURIComponent(`طلب عرض:\n${o.title}\n${o.desc}`),
+        "_blank"
+      );
     };
+
     box.appendChild(div);
   });
 });
