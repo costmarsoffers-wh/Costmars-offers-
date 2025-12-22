@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>العروض</title>
+<title>أحدث العروض</title>
 
 <!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -11,8 +11,7 @@
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
   await OneSignal.init({
-    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-    notifyButton: { enable: false }
+    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb"
   });
 });
 </script>
@@ -23,46 +22,45 @@ OneSignalDeferred.push(async function(OneSignal) {
 
 <style>
 body{margin:0;font-family:Arial;background:#f4f6f9}
-header{background:#1976d2;color:#fff;padding:15px;text-align:center;font-size:20px}
+header{background:#0d47a1;color:#fff;padding:15px;text-align:center;font-size:20px}
 .container{padding:15px}
-.card{
-  background:#fff;
-  border-radius:15px;
-  box-shadow:0 4px 12px rgba(0,0,0,.1);
-  margin-bottom:20px;
-  overflow:hidden;
+.offer{
+ background:#fff;
+ border-radius:18px;
+ box-shadow:0 5px 15px rgba(0,0,0,.15);
+ margin-bottom:20px;
+ overflow:hidden
 }
-.card img{width:100%;display:block}
-.content{padding:15px}
+.offer img{width:100%;display:block}
+.box{padding:15px}
 .title{font-size:18px;font-weight:bold}
 .desc{margin:10px 0;color:#444}
 .timer{
-  background:#eee;
-  padding:10px;
-  border-radius:10px;
-  text-align:center;
-  font-weight:bold;
-  margin-bottom:10px
+ background:#eee;
+ padding:10px;
+ border-radius:10px;
+ text-align:center;
+ font-weight:bold;
+ margin-bottom:10px
 }
-.whatsapp{
-  width:100%;
-  background:#25D366;
-  color:#fff;
-  border:none;
-  padding:12px;
-  font-size:16px;
-  border-radius:10px;
-  cursor:pointer
+.btn{
+ width:100%;
+ background:#25D366;
+ color:#fff;
+ border:none;
+ padding:14px;
+ font-size:16px;
+ border-radius:12px
 }
-.notify-btn{
-  background:#ff9800;
-  color:#fff;
-  border:none;
-  width:100%;
-  padding:14px;
-  font-size:17px;
-  border-radius:12px;
-  margin-bottom:15px;
+.notify{
+ background:#ff9800;
+ color:#fff;
+ border:none;
+ padding:15px;
+ width:100%;
+ border-radius:15px;
+ font-size:17px;
+ margin-bottom:15px
 }
 </style>
 </head>
@@ -72,106 +70,72 @@ header{background:#1976d2;color:#fff;padding:15px;text-align:center;font-size:20
 <header>🔥 أحدث العروض 🔥</header>
 
 <div class="container">
-
-<button class="notify-btn" onclick="enableNotifications()">
-🔔 فعّل إشعارات العروض
-</button>
-
+<button class="notify" onclick="enableNotify()">🔔 تفعيل إشعارات العروض</button>
 <div id="offers"></div>
 </div>
 
 <script>
-// ================= Firebase =================
 firebase.initializeApp({
-  databaseURL: "https://na3ma-customers-default-rtdb.firebaseio.com"
+ databaseURL:"https://na3ma-customers-default-rtdb.firebaseio.com"
 });
 
-const db = firebase.database();
-const offersBox = document.getElementById("offers");
+const box = document.getElementById("offers");
 
-// ================= OneSignal Permission =================
-function enableNotifications(){
-  OneSignalDeferred.push(async function(OneSignal){
-    await OneSignal.Notifications.requestPermission();
-    alert("✅ تم تفعيل الإشعارات");
-  });
+function enableNotify(){
+ OneSignalDeferred.push(async function(OneSignal){
+  await OneSignal.Notifications.requestPermission();
+  alert("✅ تم تفعيل الإشعارات");
+ });
 }
 
-// ================= WhatsApp =================
-function order(phone,title){
-  if(!phone) return alert("رقم الواتساب غير متوفر");
-  const msg = encodeURIComponent("أرغب في طلب العرض: " + title);
-  window.open(`https://wa.me/${phone}?text=${msg}`,"_blank");
+function whatsapp(num,title){
+ if(!num) return alert("رقم الواتساب غير متوفر");
+ window.open(
+  `https://wa.me/${num}?text=${encodeURIComponent("أرغب في طلب عرض: "+title)}`
+ );
 }
 
-// ================= Push Notification =================
-const ONESIGNAL_REST_KEY = "os_v2_app_t77yxind7fc3nm4m2fa2wrqx5pxyonkgv7je72nj2tg3cut2lew7ysnqeywb5m3wi3lx6xvlhtlbkb4jrpgod2c3vngcu32rooofasy";
+firebase.database().ref("offers").on("child_added",snap=>{
+ const o = snap.val();
 
-function sendPush(title, desc, image){
-  fetch("https://onesignal.com/api/v1/notifications",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":"Basic " + ONESIGNAL_REST_KEY
-    },
-    body: JSON.stringify({
-      app_id: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-      included_segments: ["Subscribed Users"],
-      headings: { ar: title },
-      contents: { ar: desc },
-      big_picture: image
-    })
-  });
-}
+ const title = o.Al || "";
+ const desc  = o.desc || "";
+ const img   = o.image || "";
+ const start = new Date(o.start).getTime();
+ const end   = new Date(o.and).getTime();
+ const phone = o.settings?.whatsapp || "";
+ const id    = "t"+snap.key;
 
-// ================= Load Offers =================
-let firstLoad = true;
+ box.innerHTML += `
+ <div class="offer">
+  <img src="${img}">
+  <div class="box">
+   <div class="title">${title}</div>
+   <div class="desc">${desc}</div>
+   <div class="timer" id="${id}">...</div>
+   <button class="btn" onclick="whatsapp('${phone}','${title}')">
+    طلب العرض عبر واتساب
+   </button>
+  </div>
+ </div>`;
 
-db.ref("offers").on("child_added", snap=>{
-  const o = snap.val();
-
-  const start = new Date(o.start).getTime();
-  const end   = new Date(o.end).getTime();
-  const phone = o.settings && o.settings.whatsapp ? o.settings.whatsapp : "";
-  const timerId = "t_" + snap.key;
-
-  offersBox.innerHTML = `
-    <div class="card">
-      <img src="${o.image}">
-      <div class="content">
-        <div class="title">${o.title}</div>
-        <div class="desc">${o.desc}</div>
-        <div class="timer" id="${timerId}">...</div>
-        <button class="whatsapp" onclick="order('${phone}','${o.title}')">
-          طلب العرض عبر واتساب
-        </button>
-      </div>
-    </div>
-  ` + offersBox.innerHTML;
-
-  if(!firstLoad){
-    sendPush(o.title, o.desc, o.image);
+ setInterval(()=>{
+  const now = Date.now();
+  if(now < start){
+    document.getElementById(id).innerHTML="⏳ لم يبدأ بعد";
+    return;
   }
-
-  firstLoad = false;
-
-  setInterval(()=>{
-    const now = Date.now();
-    if(now < start){
-      document.getElementById(timerId).innerHTML = "⏳ لم يبدأ بعد";
-      return;
-    }
-    const diff = end - now;
-    if(diff <= 0){
-      document.getElementById(timerId).innerHTML = "❌ انتهى العرض";
-      return;
-    }
-    const d = Math.floor(diff / (1000*60*60*24));
-    const h = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-    const m = Math.floor((diff % (1000*60*60)) / (1000*60));
-    const s = Math.floor((diff % (1000*60)) / 1000);
-    document.getElementById(timerId).innerHTML = `⏳ ${d}ي ${h}س ${m}د ${s}ث`;
-  },1000);
+  const diff = end - now;
+  if(diff<=0){
+    document.getElementById(id).innerHTML="❌ انتهى العرض";
+    return;
+  }
+  const d=Math.floor(diff/86400000);
+  const h=Math.floor(diff%86400000/3600000);
+  const m=Math.floor(diff%3600000/60000);
+  const s=Math.floor(diff%60000/1000);
+  document.getElementById(id).innerHTML=`⏳ ${d}ي ${h}س ${m}د ${s}ث`;
+ },1000);
 });
 </script>
 
