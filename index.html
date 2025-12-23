@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,17 +6,17 @@
 <title>العروض</title>
 
 <!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
-
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-window.OneSignal = window.OneSignal || [];
-OneSignal.push(function() {
-  OneSignal.init({
-    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-    notifyButton: { enable: false },
-    autoRegister: false
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
+      notifyButton: {
+        enable: true
+      }
+    });
   });
-});
 </script>
 
 <style>
@@ -29,21 +28,22 @@ body{
 header{
   background:#1976d2;
   color:#fff;
-  padding:16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  padding:18px;
+  text-align:center;
 }
-button{
-  padding:14px 20px;
-  font-size:16px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
+.offer{
+  margin:16px;
+  background:#fff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
-.subscribe{
-  background:#ff9800;
-  font-weight:bold;
+.offer img{
+  width:100%;
+  display:block;
+}
+.offer .content{
+  padding:14px;
 }
 </style>
 </head>
@@ -51,17 +51,18 @@ button{
 <body>
 
 <header>
-  <h3>🔥 العروض الحالية</h3>
-  <button class="subscribe" onclick="subscribe()">🔔 اشترك</button>
+  <h2>🔥 أحدث العروض</h2>
+  <p>فعّل الإشعارات ليصلك كل جديد</p>
 </header>
 
-<script>
-function subscribe(){
-  OneSignal.push(function() {
-    OneSignal.showSlidedownPrompt();
-  });
-}
-</script>
+<div class="offer">
+  <img src="https://picsum.photos/600/400">
+  <div class="content">
+    <h3>خصم 25%</h3>
+    <p>لفترة محدودة</p>
+  </div>
+</div>
 
 </body>
 </html>
+
