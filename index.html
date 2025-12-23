@@ -6,79 +6,219 @@
 <title>عروض العملاء - Customers Offers</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
-    body {
-        font-family: 'Cairo', sans-serif;
-        background: #1a1a1a;
-        margin: 0;
-        padding: 0;
-        color: #fff;
-    }
+body {
+    font-family: 'Cairo', sans-serif;
+    background: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+}
 
+/* Header */
+header {
+    background: linear-gradient(90deg, #8e2de2 0%, #4a00e0 100%);
+    color: #fff;
+    padding: 20px 15px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    overflow: hidden;
+    position: relative;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#header-brand {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+    color: #ffcc00;
+    white-space: nowrap;
+    border-right: 2px solid #fff;
+    overflow: hidden;
+}
+
+#header-details {
+    font-size: 1em;
+    color: #ffffffaa;
+    white-space: nowrap;
+    border-right: 2px solid #fff;
+    overflow: hidden;
+}
+
+/* Media Queries للشاشات الصغيرة */
+@media (max-width: 600px) {
     header {
-        background: linear-gradient(90deg, #8e2de2 0%, #4a00e0 100%);
-        color: #fff;
-        padding: 30px 20px;
-        text-align: center;
-        font-weight: bold;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        overflow: hidden;
-        position: relative;
-        height: 100px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        height: 70px;
+        padding: 15px 10px;
     }
-
     #header-brand {
-        font-size: 2em;
-        margin-bottom: 8px;
-        opacity: 0;
-        transition: opacity 0.5s;
-    }
-
-    #header-details {
         font-size: 1.2em;
-        color: #ffcc00;
-        opacity: 0;
-        transition: opacity 0.5s;
     }
-
-    .container {
-        max-width: 1200px;
-        margin: 40px auto;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 30px;
-        padding: 0 20px;
+    #header-details {
+        font-size: 0.9em;
     }
+}
 
-    /* باقي التصميم للعروض كما في النسخة السابقة */
-    .offer-card {background: linear-gradient(145deg, #2c2c54, #1c1c2c);border-radius: 20px;overflow: hidden;box-shadow: 0 10px 30px rgba(0,0,0,0.5);transition: transform 0.5s, box-shadow 0.5s;transform-style: preserve-3d;opacity: 0;transform: translateY(50px) rotateX(10deg);animation: fadeInUp 0.8s forwards;position: relative;}
-    .offer-card:hover {transform: translateY(-10px) rotateX(0deg) scale(1.05);box-shadow: 0 20px 40px rgba(0,0,0,0.7);}
-    .offer-card img {width: 100%;height: 220px;object-fit: cover;border-bottom: 1px solid rgba(255,255,255,0.1);cursor: pointer;transition: transform 0.5s;}
-    .offer-card:hover img {transform: scale(1.05);}
-    .offer-content {padding: 20px;}
-    .offer-desc {font-size: 1.1em;margin-bottom: 10px;color: #f0f0f0;line-height: 1.5;}
-    .offer-dates {font-size: 0.9em;color: #ccc;margin-bottom: 10px;}
-    .countdown {font-size: 0.95em;background: rgba(255,255,255,0.05);padding: 8px 12px;border-radius: 10px;margin-bottom: 10px;display: flex;justify-content: space-between;text-align: center;flex-wrap: wrap;gap: 5px;}
-    .countdown span {display: inline-block;min-width: 45px;font-weight: bold;color: #ffcc00;}
-    .progress-bar-container {background: rgba(255,255,255,0.1);border-radius: 20px;overflow: hidden;height: 12px;margin-bottom: 15px;}
-    .progress-bar {height: 100%;background: linear-gradient(90deg, #ff416c, #ff4b2b);width: 0%;transition: width 1s linear;}
-    .offer-button {display: inline-block;padding: 12px 25px;background: linear-gradient(90deg, #ff416c, #ff4b2b);color: #fff;border-radius: 50px;text-decoration: none;font-weight: bold;box-shadow: 0 5px 15px rgba(255,75,43,0.5);transition: background 0.3s, transform 0.3s, box-shadow 0.3s;}
-    .offer-button:hover {background: linear-gradient(90deg, #ff4b2b, #ff416c);transform: scale(1.08);box-shadow: 0 8px 20px rgba(255,75,43,0.7);}
-    .alert-ending {background: #ff4b2b;color: #fff;padding: 8px 12px;border-radius: 12px;font-weight: bold;margin-bottom: 10px;text-align: center;animation: pulse 1s infinite;}
-    @keyframes fadeInUp {to {opacity: 1;transform: translateY(0) rotateX(0deg);}}
-    @keyframes pulse {0%, 100% {opacity: 1;} 50% {opacity: 0.6;}}
-    #lightbox {position: fixed;display: none;top: 0; left: 0;width: 100%; height: 100%;background: rgba(0,0,0,0.9);justify-content: center;align-items: center;z-index: 1000;}
-    #lightbox img {max-width: 90%; max-height: 90%; border-radius: 15px; box-shadow: 0 0 20px rgba(255,255,255,0.5);}
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 0 20px;
+}
+
+/* Offer Card */
+.offer-card {
+    background: linear-gradient(145deg, #2c2c54, #1c1c2c);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: transform 0.5s, box-shadow 0.5s;
+    transform-style: preserve-3d;
+    opacity: 0;
+    transform: translateY(50px) rotateX(10deg);
+    animation: fadeInUp 0.8s forwards;
+    position: relative;
+}
+
+.offer-card:hover {
+    transform: translateY(-10px) rotateX(0deg) scale(1.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+}
+
+.offer-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: transform 0.5s;
+}
+
+.offer-card:hover img {
+    transform: scale(1.05);
+}
+
+.offer-content {
+    padding: 20px;
+}
+
+.offer-desc {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: #f0f0f0;
+    line-height: 1.5;
+}
+
+.offer-dates {
+    font-size: 0.9em;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.countdown {
+    font-size: 0.95em;
+    background: rgba(255,255,255,0.05);
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.countdown span {
+    display: inline-block;
+    min-width: 45px;
+    font-weight: bold;
+    color: #ffcc00;
+}
+
+.progress-bar-container {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    height: 12px;
+    margin-bottom: 15px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    width: 0%;
+    transition: width 1s linear;
+}
+
+.offer-button {
+    display: inline-block;
+    padding: 12px 25px;
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    color: #fff;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(255,75,43,0.5);
+    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.offer-button:hover {
+    background: linear-gradient(90deg, #ff4b2b, #ff416c);
+    transform: scale(1.08);
+    box-shadow: 0 8px 20px rgba(255,75,43,0.7);
+}
+
+.alert-ending {
+    background: #ff4b2b;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+    animation: pulse 1s infinite;
+}
+
+@keyframes fadeInUp {
+    to {opacity: 1; transform: translateY(0) rotateX(0deg);}
+}
+
+@keyframes pulse {
+    0%, 100% {opacity: 1;}
+    50% {opacity: 0.6;}
+}
+
+/* Lightbox */
+#lightbox {
+    position: fixed;
+    display: none;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+#lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
+}
 </style>
 </head>
 <body>
 
 <header>
-    <div id="header-brand">عروض العملاء</div>
-    <div id="header-details">تفاصيل العرض</div>
+    <div id="header-brand"></div>
+    <div id="header-details"></div>
 </header>
 
 <div class="container" id="offersContainer"></div>
@@ -90,7 +230,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyXXXXXX",
     authDomain: "na3ma-customers.firebaseapp.com",
     databaseURL: "https://na3ma-customers-default-rtdb.firebaseio.com",
@@ -98,136 +238,147 @@
     storageBucket: "na3ma-customers.appspot.com",
     messagingSenderId: "XXXXXX",
     appId: "1:XXXX:web:XXXX"
-  };
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+const headerBrand = document.getElementById('header-brand');
+const headerDetails = document.getElementById('header-details');
 
-  const headerBrand = document.getElementById('header-brand');
-  const headerDetails = document.getElementById('header-details');
+// جلب العناوين من teteal
+let headerItems = [];
+db.ref('teteal').once('value').then(snapshot => {
+    snapshot.forEach(child => {
+        const val = child.val();
+        if(val?.brand && val?.details){
+            headerItems.push({brand: val.brand, details: val.details});
+        }
+    });
+    if(headerItems.length) startHeaderAnimation();
+});
 
-  // جلب العناوين من teteal
-  let headerItems = [];
-  db.ref('teteal').once('value').then(snapshot => {
-      snapshot.forEach(child => {
-          const val = child.val();
-          if(val?.brand && val?.details){
-              headerItems.push({brand: val.brand, details: val.details});
-          }
-      });
-      if(headerItems.length) animateHeaderItems();
-  });
+// تأثير الكتابة حرف حرف
+function typeWriter(element, text, speed = 80, callback){
+    element.textContent = '';
+    let i = 0;
+    function type(){
+        if(i < text.length){
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        } else {
+            if(callback) callback();
+        }
+    }
+    type();
+}
 
-  function animateHeaderItems(){
-      let index = 0;
-      setInterval(() => {
-          const item = headerItems[index];
-          headerBrand.style.opacity = 0;
-          headerDetails.style.opacity = 0;
-          setTimeout(() => {
-              headerBrand.textContent = item.brand;
-              headerDetails.textContent = item.details;
-              headerBrand.style.opacity = 1;
-              headerDetails.style.opacity = 1;
-              index = (index + 1) % headerItems.length;
-          }, 500);
-      }, 4000); // تغيير كل 4 ثوانٍ
-  }
+function startHeaderAnimation(){
+    let index = 0;
+    function nextHeader(){
+        const item = headerItems[index];
+        typeWriter(headerBrand, item.brand, 80, () => {
+            typeWriter(headerDetails, item.details, 50, () => {
+                setTimeout(() => {
+                    index = (index + 1) % headerItems.length;
+                    nextHeader();
+                }, 2000);
+            });
+        });
+    }
+    nextHeader();
+}
 
-  // باقي كود العروض كما في النسخة السابقة
-  const offersContainer = document.getElementById('offersContainer');
-  let whatsappNumber = '';
-  db.ref('settings').once('value').then(snapshot => {
+// العروض
+const offersContainer = document.getElementById('offersContainer');
+let whatsappNumber = '';
+db.ref('settings').once('value').then(snapshot => {
     whatsappNumber = snapshot.val()?.whatsapp || '01000000000';
-  });
+});
 
-  db.ref('offers').orderByChild('createdAt').once('value').then(snapshot => {
+db.ref('offers').orderByChild('createdAt').once('value').then(snapshot => {
     const offers = [];
     snapshot.forEach(child => {
-      offers.push({ id: child.key, ...child.val() });
+        offers.push({ id: child.key, ...child.val() });
     });
-
     offers.sort((a,b) => b.createdAt - a.createdAt);
 
     offers.forEach((offer, index) => {
-      const offerCard = document.createElement('div');
-      offerCard.className = 'offer-card';
-      offerCard.style.animationDelay = `${index * 0.1}s`;
+        const offerCard = document.createElement('div');
+        offerCard.className = 'offer-card';
+        offerCard.style.animationDelay = `${index * 0.1}s`;
 
-      offerCard.innerHTML = `
-        <img src="${offer.image}" alt="Offer Image" onclick="openLightbox('${offer.image}')">
-        <div class="offer-content">
-            <div class="offer-desc">${offer.desc}</div>
-            <div class="offer-dates">تبدأ: ${new Date(offer.start).toLocaleDateString('ar-EG')} | تنتهي: ${new Date(offer.end).toLocaleDateString('ar-EG')}</div>
-            <div class="countdown" id="countdown-${offer.id}">
-                <span id="days-${offer.id}">0</span> أيام
-                <span id="hours-${offer.id}">0</span> ساعات
-                <span id="minutes-${offer.id}">0</span> دقائق
-                <span id="seconds-${offer.id}">0</span> ثواني
+        offerCard.innerHTML = `
+            <img src="${offer.image}" alt="Offer Image" onclick="openLightbox('${offer.image}')">
+            <div class="offer-content">
+                <div class="offer-desc">${offer.desc}</div>
+                <div class="offer-dates">تبدأ: ${new Date(offer.start).toLocaleDateString('ar-EG')} | تنتهي: ${new Date(offer.end).toLocaleDateString('ar-EG')}</div>
+                <div class="countdown" id="countdown-${offer.id}">
+                    <span id="days-${offer.id}">0</span> أيام
+                    <span id="hours-${offer.id}">0</span> ساعات
+                    <span id="minutes-${offer.id}">0</span> دقائق
+                    <span id="seconds-${offer.id}">0</span> ثواني
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-${offer.id}"></div>
+                </div>
+                <a class="offer-button" href="https://wa.me/${whatsappNumber}?text=أريد طلب العرض: ${encodeURIComponent(offer.desc)}" target="_blank">طلب العرض</a>
             </div>
-            <div class="progress-bar-container">
-                <div class="progress-bar" id="progress-${offer.id}"></div>
-            </div>
-            <a class="offer-button" href="https://wa.me/${whatsappNumber}?text=أريد طلب العرض: ${encodeURIComponent(offer.desc)}" target="_blank">طلب العرض</a>
-        </div>
-      `;
+        `;
 
-      offersContainer.appendChild(offerCard);
+        offersContainer.appendChild(offerCard);
 
-      const countdownEl = document.getElementById(`countdown-${offer.id}`);
-      const daysEl = document.getElementById(`days-${offer.id}`);
-      const hoursEl = document.getElementById(`hours-${offer.id}`);
-      const minutesEl = document.getElementById(`minutes-${offer.id}`);
-      const secondsEl = document.getElementById(`seconds-${offer.id}`);
-      const progressEl = document.getElementById(`progress-${offer.id}`);
+        const countdownEl = document.getElementById(`countdown-${offer.id}`);
+        const daysEl = document.getElementById(`days-${offer.id}`);
+        const hoursEl = document.getElementById(`hours-${offer.id}`);
+        const minutesEl = document.getElementById(`minutes-${offer.id}`);
+        const secondsEl = document.getElementById(`seconds-${offer.id}`);
+        const progressEl = document.getElementById(`progress-${offer.id}`);
 
-      const startTime = new Date(offer.start).getTime();
-      const endTime = new Date(offer.end).getTime();
-      const totalDuration = endTime - startTime;
+        const startTime = new Date(offer.start).getTime();
+        const endTime = new Date(offer.end).getTime();
+        const totalDuration = endTime - startTime;
 
-      const interval = setInterval(() => {
-          const now = new Date().getTime();
-          let distance = endTime - now;
+        const interval = setInterval(() => {
+            const now = new Date().getTime();
+            let distance = endTime - now;
+            if(distance <= 0){
+                clearInterval(interval);
+                offerCard.remove();
+                return;
+            }
 
-          if(distance <= 0){
-              clearInterval(interval);
-              offerCard.remove();
-              return;
-          }
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            daysEl.textContent = days;
+            hoursEl.textContent = hours;
+            minutesEl.textContent = minutes;
+            secondsEl.textContent = seconds;
 
-          daysEl.textContent = days;
-          hoursEl.textContent = hours;
-          minutesEl.textContent = minutes;
-          secondsEl.textContent = seconds;
+            let elapsed = now - startTime;
+            let progress = (elapsed / totalDuration) * 100;
+            progressEl.style.width = `${progress}%`;
 
-          let elapsed = now - startTime;
-          let progress = (elapsed / totalDuration) * 100;
-          progressEl.style.width = `${progress}%`;
-
-          if(distance < 24 * 60 * 60 * 1000 && !offerCard.querySelector('.alert-ending')){
-              const alertDiv = document.createElement('div');
-              alertDiv.className = 'alert-ending';
-              alertDiv.textContent = '⚠️ العرض سينتهي خلال 24 ساعة!';
-              countdownEl.before(alertDiv);
-          }
-
-      }, 1000);
+            if(distance < 24 * 60 * 60 * 1000 && !offerCard.querySelector('.alert-ending')){
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert-ending';
+                alertDiv.textContent = '⚠️ العرض سينتهي خلال 24 ساعة!';
+                countdownEl.before(alertDiv);
+            }
+        }, 1000);
     });
-  });
+});
 
-  function openLightbox(src){
-      const lightbox = document.getElementById('lightbox');
-      const img = document.getElementById('lightbox-img');
-      img.src = src;
-      lightbox.style.display = 'flex';
-  }
+function openLightbox(src){
+    const lightbox = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    img.src = src;
+    lightbox.style.display = 'flex';
+}
 </script>
-
 </body>
 </html>
 
