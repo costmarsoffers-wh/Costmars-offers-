@@ -5,45 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>العروض</title>
 
-<!-- OneSignal -->
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<!-- OneSignal (الطريقة القديمة) -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-      notifyButton: {
-        enable: true
-      }
-    });
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({
+    appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
+    notifyButton: { enable: true }
   });
+});
 </script>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:#f4f6f9;
+  font-family:"Segoe UI",Tahoma;
+  background:#f2f4f7;
 }
 header{
-  background:#1976d2;
+  background:#0d47a1;
   color:#fff;
-  padding:18px;
+  padding:20px;
   text-align:center;
 }
-.offer{
-  margin:16px;
+.container{
+  padding:16px;
+}
+.card{
   background:#fff;
   border-radius:18px;
   overflow:hidden;
-  box-shadow:0 4px 10px rgba(0,0,0,.15);
+  box-shadow:0 8px 20px rgba(0,0,0,.12);
+  margin-bottom:20px;
 }
-.offer img{
+.card img{
   width:100%;
-  display:block;
+  cursor:pointer;
 }
-.offer .content{
+.card .content{
+  padding:16px;
+}
+.card h3{
+  margin:0 0 8px;
+}
+.timer{
+  color:#d32f2f;
+  font-weight:bold;
+  margin:10px 0;
+}
+.btn{
+  width:100%;
   padding:14px;
+  background:#25d366;
+  border:none;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#viewer{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+#viewer img{
+  max-width:95%;
+  max-height:95%;
+  border-radius:12px;
 }
 </style>
 </head>
@@ -55,13 +92,79 @@ header{
   <p>فعّل الإشعارات ليصلك كل جديد</p>
 </header>
 
-<div class="offer">
-  <img src="https://picsum.photos/600/400">
-  <div class="content">
-    <h3>خصم 25%</h3>
-    <p>لفترة محدودة</p>
-  </div>
+<div class="container" id="offers"></div>
+
+<div id="viewer" onclick="this.style.display='none'">
+  <img id="viewerImg">
 </div>
+
+<script>
+/* Firebase config */
+firebase.initializeApp({
+  apiKey: "AIzaSyBwMv6b3Pd6Xjn5Nu4Q4RFV_XFR_6BSsoM",
+  databaseURL: "https://na3ma-customers-default-rtdb.firebaseio.com"
+});
+const db = firebase.database();
+
+let WHATSAPP = "";
+
+/* جلب رقم الواتساب */
+db.ref("settings/whatsapp").on("value", s=>{
+  WHATSAPP = s.val();
+});
+
+/* جلب العروض */
+db.ref("offers").on("value", snap=>{
+  const box = document.getElementById("offers");
+  box.innerHTML = "";
+  snap.forEach(child=>{
+    const d = child.val();
+    box.innerHTML += `
+      <div class="card">
+        <img src="${d.image}" onclick="viewImage('${d.image}')">
+        <div class="content">
+          <h3>${d.title}</h3>
+          <p>${d.desc}</p>
+          <div class="timer" id="t${child.key}"></div>
+          <button class="btn" onclick="order('${d.title}')">
+            🟢 طلب العرض
+          </button>
+        </div>
+      </div>
+    `;
+    countdown(d.end, "t"+child.key);
+  });
+});
+
+/* عد تنازلي */
+function countdown(end,id){
+  setInterval(()=>{
+    const diff = new Date(end) - new Date();
+    if(diff<=0){
+      document.getElementById(id).innerText="انتهى العرض";
+      return;
+    }
+    const d=Math.floor(diff/86400000);
+    const h=Math.floor(diff%86400000/3600000);
+    const m=Math.floor(diff%3600000/60000);
+    const s=Math.floor(diff%60000/1000);
+    document.getElementById(id).innerText=
+      `⏳ ${d}ي ${h}س ${m}د ${s}ث`;
+  },1000);
+}
+
+/* طلب العرض */
+function order(title){
+  const msg = encodeURIComponent("أرغب في عرض: "+title);
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
+}
+
+/* عرض الصورة كاملة */
+function viewImage(src){
+  document.getElementById("viewerImg").src=src;
+  document.getElementById("viewer").style.display="flex";
+}
+</script>
 
 </body>
 </html>
