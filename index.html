@@ -12,7 +12,7 @@ window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
   await OneSignal.init({
     appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-    notifyButton: { enable: false }
+    notifyButton:{ enable:false }
   });
 });
 </script>
@@ -22,27 +22,26 @@ OneSignalDeferred.push(async function(OneSignal) {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
+*{box-sizing:border-box}
 body{
   margin:0;
   font-family:system-ui, Arial;
-  background:#f4f6f9;
+  background:#f2f4f8;
 }
 
 /* Header */
 header{
   background:linear-gradient(135deg,#1976d2,#0d47a1);
   color:#fff;
-  padding:15px;
+  padding:16px;
   display:flex;
   justify-content:space-between;
   align-items:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
 }
-header h1{
-  margin:0;
-  font-size:20px;
-}
+header h1{margin:0;font-size:20px}
 .bell{
-  font-size:22px;
+  font-size:24px;
   cursor:pointer;
 }
 
@@ -50,70 +49,102 @@ header h1{
 #subModal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.5);
+  background:rgba(0,0,0,.6);
   display:none;
   justify-content:center;
   align-items:center;
-  z-index:9999;
+  z-index:10000;
 }
 #subModal .box{
   background:#fff;
   padding:20px;
-  border-radius:14px;
+  border-radius:16px;
   width:90%;
-  max-width:320px;
+  max-width:330px;
+  animation:pop .3s ease;
+}
+@keyframes pop{
+  from{transform:scale(.9);opacity:0}
+  to{transform:scale(1);opacity:1}
 }
 #subModal input{
   width:100%;
-  padding:10px;
-  margin-bottom:10px;
-  border-radius:8px;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:10px;
   border:1px solid #ccc;
+  font-size:15px;
 }
 #subModal button{
   width:100%;
-  padding:12px;
+  padding:14px;
   background:#1976d2;
   color:#fff;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-/* Offer */
+/* Offer Card */
 .offer{
   background:#fff;
-  margin:15px;
-  border-radius:16px;
+  margin:16px;
+  border-radius:18px;
   overflow:hidden;
-  box-shadow:0 8px 20px rgba(0,0,0,.12);
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
 }
 .offer img{
   width:100%;
-  height:280px;
+  height:260px;
   object-fit:cover;
+  cursor:pointer;
 }
 .offer .content{
-  padding:15px;
+  padding:16px;
 }
 .timer{
-  background:#f1f1f1;
+  background:#eef1f5;
   padding:10px;
   border-radius:10px;
   text-align:center;
   font-weight:bold;
-  margin:10px 0;
+  margin:12px 0;
 }
 .btn{
   display:block;
-  text-align:center;
   background:#25d366;
   color:#fff;
+  text-align:center;
   padding:14px;
   text-decoration:none;
-  font-size:16px;
-  font-weight:bold;
   border-radius:10px;
+  font-weight:bold;
+}
+
+/* Image Viewer */
+#imgViewer{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.9);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:20000;
+}
+#imgViewer img{
+  max-width:95%;
+  max-height:95%;
+  border-radius:10px;
+}
+#imgViewer span{
+  position:absolute;
+  top:20px;
+  left:20px;
+  font-size:26px;
+  color:#fff;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -134,91 +165,89 @@ header h1{
   </div>
 </div>
 
+<!-- Image Viewer -->
+<div id="imgViewer" onclick="closeImg()">
+  <span>✕</span>
+  <img id="bigImg">
+</div>
+
 <div id="offers"></div>
 
 <script>
 /* Firebase */
-const firebaseConfig = {
-  apiKey: "AIzaSyBwMv6b3Pd6Xjn5Nu4Q4RFV_XFR_6BSsoM",
-  databaseURL: "https://na3ma-customers-default-rtdb.firebaseio.com"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let whatsapp = "";
-
-/* Get WhatsApp */
-db.ref("settings/whatsapp").on("value", s=>{
-  whatsapp = s.val() || "";
+firebase.initializeApp({
+  apiKey:"AIzaSyBwMv6b3Pd6Xjn5Nu4Q4RFV_XFR_6BSsoM",
+  databaseURL:"https://na3ma-customers-default-rtdb.firebaseio.com"
 });
+const db = firebase.database();
+let whatsapp="";
 
-/* Load offers */
-db.ref("offers").on("value", snap=>{
-  const box = document.getElementById("offers");
-  box.innerHTML = "";
-  snap.forEach(child=>{
-    const o = child.val();
-    const end = new Date(o.end).getTime();
+/* WhatsApp */
+db.ref("settings/whatsapp").on("value",s=>whatsapp=s.val()||"");
 
-    const el = document.createElement("div");
-    el.className="offer";
-    el.innerHTML = `
-      <img src="${o.image}">
+/* Offers */
+db.ref("offers").on("value",snap=>{
+  offers.innerHTML="";
+  snap.forEach(c=>{
+    const o=c.val();
+    const end=new Date(o.end).getTime();
+    const div=document.createElement("div");
+    div.className="offer";
+    div.innerHTML=`
+      <img src="${o.image}" onclick="viewImg(this.src)">
       <div class="content">
-        <h3>${o.title || ""}</h3>
-        <p>${o.desc || ""}</p>
-        <div class="timer" id="t_${child.key}"></div>
+        <h3>${o.title||""}</h3>
+        <p>${o.desc||""}</p>
+        <div class="timer" id="t_${c.key}"></div>
         <a class="btn" target="_blank"
            href="https://wa.me/${whatsapp}?text=${encodeURIComponent(o.desc)}">
            طلب العرض
         </a>
-      </div>
-    `;
-    box.appendChild(el);
+      </div>`;
+    offers.appendChild(div);
 
     setInterval(()=>{
-      const now = Date.now();
-      let d = end - now;
-      const t = document.getElementById("t_"+child.key);
-      if(d <= 0){ t.innerText="انتهى العرض"; return; }
-      const days = Math.floor(d/86400000);
-      const hrs = Math.floor((d%86400000)/3600000);
-      const mins = Math.floor((d%3600000)/60000);
-      const secs = Math.floor((d%60000)/1000);
-      t.innerText = `${days} يوم ${hrs} ساعة ${mins} دقيقة ${secs} ثانية`;
+      let d=end-Date.now();
+      const t=document.getElementById("t_"+c.key);
+      if(d<=0){t.innerText="انتهى العرض";return;}
+      t.innerText=
+        Math.floor(d/86400000)+" يوم "+
+        Math.floor(d%86400000/3600000)+" ساعة "+
+        Math.floor(d%3600000/60000)+" دقيقة "+
+        Math.floor(d%60000/1000)+" ثانية";
     },1000);
   });
 });
 
-/* Subscribe logic */
+/* Subscribe */
 function openSub(){
-  document.getElementById("subModal").style.display="flex";
+  subModal.style.display="flex";
 }
 
 function subscribe(){
-  const name = subName.value.trim();
-  const phone = subPhone.value.trim();
-  if(!name || !phone){
-    alert("أدخل البيانات");
-    return;
-  }
+  const name=subName.value.trim();
+  const phone=subPhone.value.trim();
+  if(!name||!phone){alert("أدخل البيانات");return;}
 
   OneSignalDeferred.push(async function(OneSignal){
-    await OneSignal.showSlidedownPrompt();
-
-    const perm = await OneSignal.Notifications.permission;
-    if(perm !== "granted"){
-      alert("يجب السماح بالإشعارات");
-      return;
-    }
-
-    await OneSignal.sendTag("name", name);
-    await OneSignal.sendTag("phone", phone);
-    await OneSignal.sendTag("subscribed", "yes");
-
-    document.getElementById("subModal").style.display="none";
+    await OneSignal.showSlidedownPrompt(); // 👈 لازم مباشرة من الزر
+    const perm=await OneSignal.Notifications.permission;
+    if(perm!=="granted"){alert("يجب السماح بالإشعارات");return;}
+    await OneSignal.sendTag("name",name);
+    await OneSignal.sendTag("phone",phone);
+    await OneSignal.sendTag("subscribed","yes");
+    subModal.style.display="none";
     alert("تم الاشتراك بنجاح 🔔");
   });
+}
+
+/* Image */
+function viewImg(src){
+  bigImg.src=src;
+  imgViewer.style.display="flex";
+}
+function closeImg(){
+  imgViewer.style.display="none";
 }
 </script>
 
