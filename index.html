@@ -43,6 +43,7 @@
         opacity: 0;
         transform: translateY(50px) rotateX(10deg);
         animation: fadeInUp 0.8s forwards;
+        position: relative;
     }
 
     .offer-card:hover {
@@ -68,7 +69,7 @@
 
     .offer-desc {
         font-size: 1.1em;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         color: #f0f0f0;
         line-height: 1.5;
     }
@@ -76,7 +77,40 @@
     .offer-dates {
         font-size: 0.9em;
         color: #ccc;
+        margin-bottom: 10px;
+    }
+
+    .countdown {
+        font-size: 0.95em;
+        background: rgba(255,255,255,0.05);
+        padding: 8px 12px;
+        border-radius: 10px;
         margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        text-align: center;
+    }
+
+    .countdown span {
+        display: inline-block;
+        min-width: 45px;
+        font-weight: bold;
+        color: #ffcc00;
+    }
+
+    .progress-bar-container {
+        background: rgba(255,255,255,0.1);
+        border-radius: 20px;
+        overflow: hidden;
+        height: 12px;
+        margin-bottom: 15px;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #ff416c, #ff4b2b);
+        width: 0%;
+        transition: width 1s linear;
     }
 
     .offer-button {
@@ -144,22 +178,71 @@
       offers.push({ id: child.key, ...child.val() });
     });
 
-    // ترتيب تنازلي حسب createdAt
     offers.sort((a,b) => b.createdAt - a.createdAt);
 
     offers.forEach((offer, index) => {
       const offerCard = document.createElement('div');
       offerCard.className = 'offer-card';
-      offerCard.style.animationDelay = `${index * 0.1}s`; // تأثير متدرج
+      offerCard.style.animationDelay = `${index * 0.1}s`;
+
       offerCard.innerHTML = `
         <img src="${offer.image}" alt="Offer Image">
         <div class="offer-content">
             <div class="offer-desc">${offer.desc}</div>
             <div class="offer-dates">تبدأ: ${new Date(offer.start).toLocaleDateString('ar-EG')} | تنتهي: ${new Date(offer.end).toLocaleDateString('ar-EG')}</div>
+            <div class="countdown" id="countdown-${offer.id}">
+                <span id="days-${offer.id}">0</span> أيام
+                <span id="hours-${offer.id}">0</span> ساعات
+                <span id="minutes-${offer.id}">0</span> دقائق
+                <span id="seconds-${offer.id}">0</span> ثواني
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-${offer.id}"></div>
+            </div>
             <a class="offer-button" href="https://wa.me/${whatsappNumber}?text=أريد طلب العرض: ${encodeURIComponent(offer.desc)}" target="_blank">طلب العرض</a>
         </div>
       `;
+
       offersContainer.appendChild(offerCard);
+
+      // تفعيل العد التنازلي
+      const countdownEl = document.getElementById(`countdown-${offer.id}`);
+      const daysEl = document.getElementById(`days-${offer.id}`);
+      const hoursEl = document.getElementById(`hours-${offer.id}`);
+      const minutesEl = document.getElementById(`minutes-${offer.id}`);
+      const secondsEl = document.getElementById(`seconds-${offer.id}`);
+      const progressEl = document.getElementById(`progress-${offer.id}`);
+
+      const startTime = new Date(offer.start).getTime();
+      const endTime = new Date(offer.end).getTime();
+      const totalDuration = endTime - startTime;
+
+      const interval = setInterval(() => {
+          const now = new Date().getTime();
+          let distance = endTime - now;
+
+          if(distance <= 0){
+              clearInterval(interval);
+              offerCard.remove(); // إزالة العرض عند انتهاء الوقت
+              return;
+          }
+
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          daysEl.textContent = days;
+          hoursEl.textContent = hours;
+          minutesEl.textContent = minutes;
+          secondsEl.textContent = seconds;
+
+          // تحديث progress bar
+          let elapsed = now - startTime;
+          let progress = (elapsed / totalDuration) * 100;
+          progressEl.style.width = `${progress}%`;
+
+      }, 1000);
     });
   });
 </script>
