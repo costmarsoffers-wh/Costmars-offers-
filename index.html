@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -5,45 +6,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>العروض</title>
 
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
 
 <script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(function(OneSignal) {
+window.OneSignal = window.OneSignal || [];
+OneSignal.push(function() {
   OneSignal.init({
     appId: "9fff8ba1-a3f9-45b6-b38c-d141ab4617eb",
-    notifyButton: { enable: false }
+    notifyButton: { enable: false },
+    autoRegister: false
   });
 });
 </script>
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f9}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f4f6f9;
+}
 header{
-  background:#1976d2;color:#fff;padding:16px;
-  display:flex;justify-content:space-between;align-items:center
+  background:#1976d2;
+  color:#fff;
+  padding:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 button{
-  padding:14px 18px;
+  padding:14px 20px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+}
+.subscribe{
   background:#ff9800;
-  border:none;border-radius:10px;
-  font-size:16px;font-weight:bold;
-  cursor:pointer;color:#000
-}
-#form{
-  display:none;
-  background:#fff;
-  margin:20px;
-  padding:16px;
-  border-radius:14px;
-  box-shadow:0 8px 20px rgba(0,0,0,.15)
-}
-input{
-  width:100%;
-  padding:12px;
-  margin-bottom:12px;
-  border-radius:8px;
-  border:1px solid #ccc
+  font-weight:bold;
 }
 </style>
 </head>
@@ -51,63 +51,17 @@ input{
 <body>
 
 <header>
-  <h3>🔥 العروض</h3>
-  <button onclick="subscribe()">🔔 اشترك</button>
+  <h3>🔥 العروض الحالية</h3>
+  <button class="subscribe" onclick="subscribe()">🔔 اشترك</button>
 </header>
 
-<div id="form">
-  <input id="name" placeholder="الاسم">
-  <input id="phone" placeholder="رقم الموبايل">
-  <button onclick="saveData()">حفظ</button>
-</div>
-
 <script>
-let osReady = false;
-
-OneSignalDeferred.push(function(OneSignal){
-  osReady = true;
-});
-
 function subscribe(){
-  if(!osReady){alert("OneSignal لم يجهز بعد");return;}
-
-  // 🚨 الطلب المباشر الوحيد
-  OneSignalDeferred.push(function(OneSignal){
+  OneSignal.push(function() {
     OneSignal.showSlidedownPrompt();
   });
-
-  // ننتظر الموافقة فقط (بدون async)
-  setTimeout(checkPermission, 1500);
-}
-
-function checkPermission(){
-  OneSignalDeferred.push(function(OneSignal){
-    OneSignal.Notifications.permission.then(function(p){
-      if(p === "granted"){
-        document.getElementById("form").style.display="block";
-      }else{
-        alert("يجب السماح بالإشعارات");
-      }
-    });
-  });
-}
-
-function saveData(){
-  const name=document.getElementById("name").value;
-  const phone=document.getElementById("phone").value;
-  if(!name||!phone){alert("أدخل البيانات");return;}
-
-  OneSignalDeferred.push(function(OneSignal){
-    OneSignal.sendTag("name",name);
-    OneSignal.sendTag("phone",phone);
-    OneSignal.sendTag("subscribed","yes");
-  });
-
-  alert("تم الاشتراك بنجاح ✅");
-  document.getElementById("form").style.display="none";
 }
 </script>
 
 </body>
 </html>
-
